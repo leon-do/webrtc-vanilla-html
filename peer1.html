@@ -1,0 +1,32 @@
+<input id="answer" />
+<button onClick="setAnswer()">Set answer</button>
+<br />
+<button onClick="send()">Send</button>
+
+<script>
+  // create local connection
+  const lc = new RTCPeerConnection();
+  const dc = lc.createDataChannel("myChannel");
+
+  // create offer then set local
+  lc.createOffer().then((offer) => lc.setLocalDescription(offer));
+  // print sdp
+  lc.onicecandidate = (e) => console.log(JSON.stringify(lc.localDescription));
+
+  // listen
+  dc.onopen = (e) => console.log("channel opened");
+  dc.onmessage = (e) => console.log(e.data);
+  dc.onerror = (err) => console.log(err);
+  dc.onclose = (e) => console.log("channel closed");
+
+  function setAnswer() {
+    // get answer
+    const answer = JSON.parse(document.getElementById("answer").value);
+    // set answer
+    lc.setRemoteDescription(answer);
+  }
+
+  function send() {
+    dc.send(Math.random());
+  }
+</script>

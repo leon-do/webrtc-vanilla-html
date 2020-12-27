@@ -1,0 +1,34 @@
+<input id="offer" />
+<button onClick="createAnswer()">create answer</button>
+<br />
+<button onClick="send()">Send</button>
+
+<script>
+  // remote connection
+  const rc = new RTCPeerConnection();
+
+  function createAnswer() {
+    // get offer
+    const offer = JSON.parse(document.getElementById("offer").value);
+
+    // listen
+    rc.ondatachannel = (e) => {
+      rc.channel = e.channel;
+      e.channel.onopen = (e) => console.log("channel opened");
+      e.channel.onmessage = (msg) => console.log(msg.data);
+      e.channel.onerror = (err) => console.log(err);
+      e.channel.onclose = (e) => console.log("channel closed");
+    };
+
+    // set remote and create answer
+    rc.setRemoteDescription(offer);
+    rc.createAnswer().then((answer) => rc.setLocalDescription(answer));
+
+    // log answer
+    rc.onicecandidate = (e) => console.log(JSON.stringify(rc.localDescription));
+  }
+
+  function send() {
+    rc.channel.send(Math.random());
+  }
+</script>
